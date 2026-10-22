@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model
 {
     protected $table = 'payments';
+
     protected $fillable = [
         'order_id',
         'midtrans_order_id',
@@ -22,7 +24,7 @@ class Payment extends Model
         'raw_notification' => 'array',
     ];
 
-    public function order()
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }

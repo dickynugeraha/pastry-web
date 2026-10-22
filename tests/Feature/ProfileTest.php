@@ -21,6 +21,35 @@ class ProfileTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_customer_profile_shows_customer_shortcuts_without_admin_access(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+
+        $response = $this
+            ->actingAs($customer)
+            ->get('/profile');
+
+        $response
+            ->assertOk()
+            ->assertSee(route('orders.index'))
+            ->assertSee(route('cart.show'))
+            ->assertDontSee(route('admin.dashboard'));
+    }
+
+    public function test_admin_profile_shows_admin_shortcuts(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this
+            ->actingAs($admin)
+            ->get('/profile');
+
+        $response
+            ->assertOk()
+            ->assertSee(route('admin.dashboard'))
+            ->assertSee(route('admin.orders.index'));
+    }
+
     public function test_profile_information_can_be_updated(): void
     {
         $user = User::factory()->create();

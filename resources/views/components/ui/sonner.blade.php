@@ -7,7 +7,7 @@
           expands on focus-within so keyboard users can reach every toast's close button.
 --}}
 @props([
-    'position' => 'bottom-right',
+    'position' => 'top-right',
     'expand' => false,
 ])
 
@@ -97,7 +97,7 @@
     role="region"
     aria-label="{{ __('Notifications') }}"
     tabindex="-1"
-    {{ $attributes->twMerge('pointer-events-none fixed z-[100] flex w-full p-4 sm:max-w-[420px] '.$posClass) }}
+    {{ $attributes->twMerge('pointer-events-none absolute z-[100] flex w-full p-4 sm:max-w-[420px] '.$posClass) }}
 >
     <div
         class="pointer-events-auto relative w-full"
@@ -120,16 +120,16 @@
                 x-transition:enter-end="opacity-100 translate-y-0"
                 data-slot="sonner-toast"
                 :data-type="t.type"
-                class="bg-background text-foreground absolute inset-x-0 {{ $anchor }} {{ $origin }} flex w-full items-start gap-3 rounded-md border p-4 shadow-lg transition-all duration-300 ease-out data-[type=success]:border-emerald-500/40 data-[type=error]:border-destructive/50 data-[type=warning]:border-amber-500/40 data-[type=info]:border-sky-500/40"
+                class="bg-stone-50 text-stone-800 absolute inset-x-0 {{ $anchor }} {{ $origin }} flex w-full items-start gap-3 rounded-lg border p-4 shadow-sm transition-all duration-300 ease-out data-[type=success]:border-emerald-200 data-[type=success]:bg-emerald-100 data-[type=success]:text-emerald-800 data-[type=error]:border-red-200 data-[type=error]:bg-red-100 data-[type=error]:text-red-800 data-[type=warning]:border-amber-200 data-[type=warning]:bg-amber-100 data-[type=warning]:text-amber-900 data-[type=info]:border-sky-200 data-[type=info]:bg-sky-100 data-[type=info]:text-sky-800"
             >
-                <template x-if="t.type === 'success'"><x-lucide-circle-check class="text-emerald-500 mt-0.5 size-4 shrink-0" /></template>
-                <template x-if="t.type === 'error'"><x-lucide-circle-x class="text-destructive mt-0.5 size-4 shrink-0" /></template>
-                <template x-if="t.type === 'warning'"><x-lucide-triangle-alert class="text-amber-500 mt-0.5 size-4 shrink-0" /></template>
-                <template x-if="t.type === 'info'"><x-lucide-info class="text-sky-500 mt-0.5 size-4 shrink-0" /></template>
-                <template x-if="t.type === 'loading'"><x-lucide-loader-circle class="text-muted-foreground mt-0.5 size-4 shrink-0 animate-spin" /></template>
+                <template x-if="t.type === 'success'"><x-lucide-circle-check class="mt-0.5 size-5 shrink-0 text-emerald-700" /></template>
+                <template x-if="t.type === 'error'"><x-lucide-circle-x class="mt-0.5 size-5 shrink-0 text-red-700" /></template>
+                <template x-if="t.type === 'warning'"><x-lucide-triangle-alert class="mt-0.5 size-5 shrink-0 text-amber-700" /></template>
+                <template x-if="t.type === 'info'"><x-lucide-info class="mt-0.5 size-5 shrink-0 text-sky-700" /></template>
+                <template x-if="t.type === 'loading'"><x-lucide-loader-circle class="mt-0.5 size-5 shrink-0 animate-spin text-current/70" /></template>
                 <div class="flex-1 space-y-1">
                     <div x-show="t.title" x-text="t.title" class="text-sm font-semibold"></div>
-                    <div x-show="t.description" x-text="t.description" class="text-muted-foreground text-sm"></div>
+                    <div x-show="t.description" x-text="t.description" class="text-current/90 text-sm"></div>
                 </div>
                 <template x-if="t.action">
                     <button type="button" @click="t.action.onClick && t.action.onClick(); remove(t.id)"
@@ -138,7 +138,7 @@
                 <button
                     type="button"
                     @click="remove(t.id)"
-                    class="text-foreground/50 hover:text-foreground shrink-0 transition-colors"
+                    class="shrink-0 text-current/50 transition-colors hover:text-current"
                     aria-label="{{ __('Close') }}"
                 >
                     <x-lucide-x class="size-4" aria-hidden="true" />

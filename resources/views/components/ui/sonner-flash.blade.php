@@ -21,6 +21,14 @@
         $flashes[] = ['type' => 'info', 'description' => (string) session('message')];
     }
 
+    if ($errors->any()) {
+        $flashes[] = [
+            'type' => 'error',
+            'title' => __('Periksa kembali data Anda.'),
+            'description' => collect($errors->all())->implode(' • '),
+        ];
+    }
+
     // Default (English) copy for known Fortify/Laravel statuses, used ONLY when the app has no
     // translation for the slug. These keys are also translatable — __() takes priority below.
     $statusDefaults = [

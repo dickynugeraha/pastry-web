@@ -7,6 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -22,10 +24,10 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-
     protected $table = 'users';
 
     protected $fillable = ['name', 'email', 'password', 'role', 'phone'];
+
     protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
@@ -36,12 +38,12 @@ class User extends Authenticatable
         ];
     }
 
-    public function cart()
+    public function cart(): HasOne
     {
         return $this->hasOne(Cart::class);
     }
 
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }

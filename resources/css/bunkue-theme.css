@@ -1,0 +1,147 @@
+:root {
+    --bunkue-paper: #faf8f5;
+    --bunkue-surface: #fffefd;
+    --bunkue-ink: #292521;
+    --bunkue-muted: #736c65;
+    --bunkue-line: #e8e3dc;
+    --bunkue-accent: #775744;
+    --bunkue-accent-soft: #f1eae3;
+}
+
+html { scroll-behavior: smooth; }
+body { color: var(--bunkue-ink); }
+::selection { background: #e8d8c8; color: var(--bunkue-ink); }
+
+.bunkue-store,
+.bunkue-auth,
+.bunkue-admin {
+    background: var(--bunkue-paper);
+    color: var(--bunkue-ink);
+}
+
+.bunkue-container {
+    width: min(calc(100% - 2.5rem), 78rem);
+    margin-inline: auto;
+}
+
+.bunkue-card {
+    border: 1px solid var(--bunkue-line);
+    border-radius: 1.25rem;
+    background: var(--bunkue-surface);
+    box-shadow: 0 8px 30px rgb(51 39 27 / 3%);
+}
+
+.bunkue-kicker {
+    color: var(--bunkue-accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.bunkue-page-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.25rem, 4vw, 3.75rem);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -0.045em;
+}
+
+.bunkue-section-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+}
+
+.bunkue-button-primary,
+.bunkue-button-secondary {
+    display: inline-flex;
+    min-height: 2.9rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.bunkue-button-primary { background: var(--bunkue-ink); color: white; }
+.bunkue-button-primary:hover { background: #51443a; }
+.bunkue-button-secondary {
+    border: 1px solid #d5cec5;
+    background: var(--bunkue-surface);
+    color: var(--bunkue-ink);
+}
+.bunkue-button-secondary:hover { border-color: #a89b8d; background: #f6f2ed; }
+
+.bunkue-store :where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]), select, textarea),
+.bunkue-auth :where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]), select, textarea),
+.bunkue-admin :where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]), select, textarea) {
+    min-height: 2.9rem;
+    border: 1px solid #dcd5cc;
+    border-radius: 0.75rem;
+    background: var(--bunkue-surface);
+    color: var(--bunkue-ink);
+    font-size: 0.875rem;
+    padding: 0.65rem 0.85rem;
+    box-shadow: none;
+}
+.bunkue-store :where(input, select, textarea):focus,
+.bunkue-auth :where(input, select, textarea):focus,
+.bunkue-admin :where(input, select, textarea):focus {
+    border-color: var(--bunkue-accent);
+    --tw-ring-color: rgb(119 87 68 / 20%);
+    outline-color: var(--bunkue-accent);
+}
+.bunkue-store :where(input, textarea)::placeholder,
+.bunkue-auth :where(input, textarea)::placeholder,
+.bunkue-admin :where(input, textarea)::placeholder { color: #9a9188; }
+.bunkue-store :where(input[type="checkbox"], input[type="radio"]),
+.bunkue-admin :where(input[type="checkbox"], input[type="radio"]),
+.bunkue-auth :where(input[type="checkbox"], input[type="radio"]) { accent-color: var(--bunkue-accent); }
+
+.bunkue-admin main :where(div.bg-white, form.bg-white, aside.bg-white) {
+    border: 1px solid var(--bunkue-line);
+    box-shadow: 0 8px 30px rgb(51 39 27 / 3%);
+}
+.bunkue-admin main table { min-width: 42rem; }
+.bunkue-admin main table tbody tr:hover { background: #faf8f5; }
+.bunkue-admin main table th {
+    color: var(--bunkue-muted);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+.bunkue-admin main table td { color: var(--bunkue-ink); }
+
+.bunkue-admin main h1 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.035em;
+}
+
+.bunkue-admin main .text-amber-700 {
+    color: var(--bunkue-accent);
+}
+
+.bunkue-admin main .bg-amber-100 {
+    background: var(--bunkue-accent-soft);
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+    outline: 2px solid var(--bunkue-accent);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

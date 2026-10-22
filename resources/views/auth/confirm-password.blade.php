@@ -1,27 +1,14 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
-    </div>
-
-    <form method="POST" action="{{ route('password.confirm') }}">
+    <p class="bunkue-kicker">Keamanan akun</p>
+    <h1 class="mt-3 font-serif text-3xl text-stone-900">Konfirmasi password</h1>
+    <p class="mt-2 text-sm leading-6 text-stone-600">Masukkan password untuk melanjutkan ke area ini.</p>
+    <form method="POST" action="{{ route('password.confirm') }}" class="mt-7 grid gap-5">
         @csrf
-
-        <!-- Password -->
         <div>
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
+            <label for="password" class="mb-2 block text-sm font-medium text-stone-700">Password</label>
+            <input id="password" class="w-full" type="password" name="password" required autocomplete="current-password">
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
-
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="bunkue-button-primary w-full">Lanjutkan</button>
     </form>
 </x-guest-layout>
