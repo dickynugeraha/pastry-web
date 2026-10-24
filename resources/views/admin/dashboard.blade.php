@@ -24,7 +24,7 @@
             <div class="flex items-center justify-between gap-4">
                 <div>
                     <h2 class="text-base font-semibold text-stone-900">Aktivitas pesanan</h2>
-                    <p class="mt-1 text-xs text-stone-500">Grafik penjualan dari pesanan yang tidak dibatalkan</p>
+                    <p class="mt-1 text-xs text-stone-500">Grafik penjualan dari pembayaran yang sudah sah</p>
                 </div>
                 <a href="{{ route('admin.reports.orders', request()->query()) }}" class="text-sm font-medium text-[#775744] hover:underline">Lihat laporan</a>
             </div>

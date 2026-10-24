@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreOrderRequest extends FormRequest
 {
@@ -23,6 +24,8 @@ class StoreOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'payment_channel' => ['required', Rule::in(config('payments.midtrans.enabled') && filled(config('payments.midtrans.server_key')) && filled(config('payments.midtrans.client_key')) ? ['manual', 'midtrans'] : ['manual'])],
+            'manual_payment_method' => ['required_if:payment_channel,manual', 'prohibited_unless:payment_channel,manual', 'nullable', 'in:bca,dana,gopay'],
             'delivery_method' => ['bail', 'required', 'in:delivery,pickup'],
             'recipient_name' => [
                 'required_if:delivery_method,delivery',

@@ -52,7 +52,7 @@ class AdminOrderController extends Controller
 
     public function show(Order $order): JsonResponse|View
     {
-        $order->load(['user', 'items.product.category', 'payment']);
+        $order->load(['user', 'items.product.category', 'payments.confirmedBy', 'payment', 'paymentProofs.reviewedBy', 'paymentStatusLogs.changedBy']);
 
         if (! request()->expectsJson()) {
             return view('admin.orders.show', compact('order'));

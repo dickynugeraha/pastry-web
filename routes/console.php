@@ -2,6 +2,9 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::command('payments:reconcile')->everyFiveMinutes()->withoutOverlapping(15)->onOneServer();
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

@@ -17,13 +17,13 @@ class OrderReportService
     {
         [$from, $to] = $this->dateRange($filters);
         $query = $this->ordersQuery($from, $to);
-        $revenueQuery = (clone $query)->where('status', '!=', 'cancelled');
+        $revenueQuery = (clone $query)->where('payment_status', 'paid');
 
         $timeline = (clone $query)
             ->selectRaw('DATE(created_at) as order_date, COUNT(*) as orders_count')
             ->selectRaw(
-                'COALESCE(SUM(CASE WHEN status != ? THEN total ELSE 0 END), 0) as revenue',
-                ['cancelled']
+                'COALESCE(SUM(CASE WHEN payment_status = ? THEN total ELSE 0 END), 0) as revenue',
+                ['paid']
             )
             ->groupBy('order_date')
             ->orderBy('order_date')
@@ -49,7 +49,7 @@ class OrderReportService
             ->selectRaw('SUM(subtotal) as revenue')
             ->whereHas('order', fn ($orderQuery) => $orderQuery
                 ->whereBetween('created_at', [$from, $to])
-                ->where('status', '!=', 'cancelled'))
+                ->where('payment_status', 'paid'))
             ->groupBy('product_name_snapshot')
             ->orderByDesc('units_sold')
             ->limit(10)
@@ -147,7 +147,7 @@ class OrderReportService
     {
         [$from, $to] = $this->dateRange($filters);
 
-        return $this->ordersQuery($from, $to)->with('user:id,name,email');
+        return $this->ordersQuery($from, $to)->with(['user:id,name,email', 'payment.confirmedBy:id,name']);
     }
 
     /**

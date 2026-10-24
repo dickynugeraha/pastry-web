@@ -10,6 +10,10 @@ class Payment extends Model
     protected $table = 'payments';
 
     protected $fillable = [
+        'provider',
+        'confirmed_by_user_id',
+        'confirmed_at',
+        'note',
         'order_id',
         'midtrans_order_id',
         'transaction_id',
@@ -21,11 +25,18 @@ class Payment extends Model
     ];
 
     protected $casts = [
+        'confirmed_at' => 'datetime',
+        'gross_amount' => 'decimal:2',
         'raw_notification' => 'array',
     ];
 
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function confirmedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'confirmed_by_user_id');
     }
 }

@@ -83,6 +83,8 @@ class CartAndOrderTest extends TestCase
             ->assertOk();
 
         $response = $this->actingAs($user)->postJson(route('orders.store'), [
+            'payment_channel' => 'manual',
+            'manual_payment_method' => 'bca',
             'delivery_method' => 'delivery',
             'recipient_name' => 'Customer Bunkue',
             'recipient_phone' => '08123456789',

@@ -28,15 +28,23 @@ class OrderReportPdf
                 $rowTop = 178;
             }
 
-            $content .= $this->rule($rowTop + 10);
-            $content .= $this->tableDividers($rowTop - 16, $rowTop + 10);
+            $content .= $this->rule($rowTop + 22);
+            $content .= $this->tableDividers($rowTop - 16, $rowTop + 3);
             $content .= $this->text(48, $rowTop, $this->shorten($order->order_code, 24), 8, 'F3');
             $content .= $this->text(165, $rowTop, $this->shorten($order->user?->name ?? '-', 22), 9, 'F3');
             $content .= $this->text(312, $rowTop, ucfirst($order->status), 9, 'F3');
             $content .= $this->text(394, $rowTop, $order->created_at->format('d/m/Y'), 9, 'F3');
             $total = $this->currency((float) $order->total);
             $content .= $this->text(548 - mb_strlen($total) * 5.4, $rowTop, $total, 9, 'F3');
-            $rowTop += 26;
+            $paymentDetails = implode(' | ', [
+                $order->payment_channel?->value ?? '-',
+                $order->manual_payment_method?->value ?? $order->payment_type ?? '-',
+                $order->payment_status,
+                $order->paid_at?->format('d/m/Y H:i') ?? '-',
+                $order->payment?->confirmedBy?->name ?? '-',
+            ]);
+            $content .= $this->text(48, $rowTop + 15, $this->shorten($paymentDetails, 105), 8);
+            $rowTop += 40;
         }
 
         if (! $hasOrders) {
@@ -69,7 +77,7 @@ class OrderReportPdf
             $content .= $this->card(40, 'Total pesanan', number_format($summary['total_orders'], 0, ',', '.'));
             $content .= $this->card(215, 'Total pendapatan', $this->currency($summary['total_revenue']));
             $content .= $this->card(390, 'Rata-rata pesanan', $this->currency($summary['average_order_value']));
-            $content .= $this->text(40, 248, 'Total pendapatan tidak termasuk pesanan dibatalkan.', 9);
+            $content .= $this->text(40, 248, 'Total pendapatan hanya dari pembayaran paid.', 9);
             $tableTop = 260;
         } else {
             $content .= $this->text(40, 126, 'Lanjutan: '.$summary['period']['from'].' s.d. '.$summary['period']['to'], 10);

@@ -17,6 +17,7 @@ $shippingOptions = $order->delivery_method === \App\Enums\DeliveryMethod::DELIVE
     </div>
     @include('admin.partials.order-status-badge', ['status' => $order->shipping_status])
 </div>
+@include('admin.orders.payment', ['order' => $order])
 <div class="mt-8 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
     <div class="bunkue-card p-6">
         <h2 class="text-base font-semibold text-stone-900">Item pesanan</h2>

@@ -28,7 +28,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('orders.store') }}" x-data="{ delivery: @js(old('delivery_method', 'pickup')) }" class="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <form method="POST" action="{{ route('orders.store') }}" x-data="{ delivery: @js(old('delivery_method', 'pickup')), channel: @js(old('payment_channel', 'manual')) }" class="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         @csrf
         <div class="bunkue-card p-5 sm:p-7">
             <h2 class="text-lg font-semibold text-stone-900">Cara menerima pesanan</h2>
@@ -61,6 +61,23 @@
                     <x-input-error :messages="$errors->get('shipping_address')" class="mt-2" />
                 </div>
             </div>
+
+            <fieldset class="mt-7 grid gap-4 border-t border-stone-200 pt-6">
+                <legend class="text-lg font-semibold text-stone-900">Pembayaran</legend>
+                <label class="flex items-center gap-3"><input type="radio" name="payment_channel" value="manual" x-model="channel"><span>Pembayaran manual</span></label>
+                @if (config('payments.midtrans.enabled') && filled(config('payments.midtrans.client_key')) && filled(config('payments.midtrans.server_key')))
+                <label class="flex items-center gap-3"><input type="radio" name="payment_channel" value="midtrans" x-model="channel"><span>Midtrans — bayar online</span></label>
+                @endif
+                <div x-show="channel === 'manual'" class="grid gap-3">
+                    @foreach (config('payments.manual') as $method => $details)
+                    <label class="flex items-start gap-3 rounded-xl border border-stone-200 p-4">
+                        <input type="radio" name="manual_payment_method" value="{{ $method }}" :disabled="channel !== 'manual'" :required="channel === 'manual'" @checked(old('manual_payment_method', 'bca') === $method) class="mt-1">
+                        <span class="text-sm"><strong>{{ $details['provider'] }}</strong><span class="mt-1 block">{{ $details['destination_number'] }} · {{ $details['account_name'] }}</span></span>
+                    </label>
+                    @endforeach
+                    <p class="text-xs leading-5 text-stone-600">Transfer sesuai total pesanan, lalu unggah bukti pembayaran pada halaman pesanan. Pembayaran diverifikasi admin.</p>
+                </div>
+            </fieldset>
 
             <div class="mt-7 border-t border-stone-200 pt-6">
                 <label for="notes" class="mb-2 block text-sm font-medium text-stone-700">Catatan pesanan <span class="font-normal text-stone-500">(opsional)</span></label>

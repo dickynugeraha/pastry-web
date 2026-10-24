@@ -41,6 +41,10 @@ class AdminOrderReportController extends Controller
                 'Email',
                 'Status',
                 'Payment Status',
+                'Payment Channel',
+                'Payment Method',
+                'Paid At',
+                'Confirmed By',
                 'Delivery Method',
                 'Total',
                 'Created At',
@@ -54,6 +58,10 @@ class AdminOrderReportController extends Controller
                         $order->user?->email,
                         $order->status,
                         $order->payment_status,
+                        $order->payment_channel?->value,
+                        $order->manual_payment_method?->value ?? $order->payment_type,
+                        $order->paid_at?->toIso8601String(),
+                        $order->payment?->confirmedBy?->name,
                         $order->delivery_method?->value,
                         $order->total,
                         $order->created_at?->toIso8601String(),
@@ -64,7 +72,7 @@ class AdminOrderReportController extends Controller
             fputcsv($handle, []);
             fputcsv($handle, ['Periode', $summary['period']['from'].' s.d. '.$summary['period']['to']]);
             fputcsv($handle, ['Total Pesanan', $summary['total_orders']]);
-            fputcsv($handle, ['Total Pendapatan (tanpa pesanan dibatalkan)', $summary['total_revenue']]);
+            fputcsv($handle, ['Total Pendapatan (pembayaran paid)', $summary['total_revenue']]);
             fputcsv($handle, ['Rata-rata Pesanan', $summary['average_order_value']]);
 
             fclose($handle);

@@ -265,7 +265,7 @@ class EcommerceAdminTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $customer = User::factory()->create();
         $product = Product::factory()->create(['price' => 15000]);
-        $order = Order::factory()->for($customer)->create([
+        $order = Order::factory()->for($customer)->paid()->create([
             'total' => 30000,
             'created_at' => now(),
         ]);
@@ -292,7 +292,7 @@ class EcommerceAdminTest extends TestCase
     {
         $this->travelTo(Carbon::parse('2026-10-22 12:00:00'));
         $admin = User::factory()->create(['role' => 'admin']);
-        $sale = Order::factory()->create([
+        $sale = Order::factory()->paid()->create([
             'order_code' => 'BK-20261020100000-ABCDE',
             'total' => 30000,
             'created_at' => '2026-10-20 10:00:00',

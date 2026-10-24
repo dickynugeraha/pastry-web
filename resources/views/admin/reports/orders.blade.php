@@ -23,7 +23,7 @@
     <div class="bunkue-card p-5">
         <p class="text-sm text-stone-500">Total pendapatan</p>
         <p class="mt-3 text-2xl font-semibold">Rp {{ number_format($summary['total_revenue'], 0, ',', '.') }}</p>
-        <p class="mt-1 text-xs text-stone-500">Tanpa pesanan dibatalkan</p>
+        <p class="mt-1 text-xs text-stone-500">Hanya pembayaran yang sudah sah</p>
     </div>
     <div class="bunkue-card p-5">
         <p class="text-sm text-stone-500">Rata-rata</p>

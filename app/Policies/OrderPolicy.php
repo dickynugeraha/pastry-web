@@ -22,6 +22,11 @@ class OrderPolicy
         return true;
     }
 
+    public function uploadPaymentProof(User $user, Order $order): bool
+    {
+        return $order->user_id === $user->id;
+    }
+
     public function update(User $user, Order $order): bool
     {
         return $user->isAdmin();

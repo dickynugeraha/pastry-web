@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\DeliveryMethod;
+use App\Enums\ManualPaymentMethod;
+use App\Enums\PaymentChannel;
 use App\Enums\ShippingStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +20,10 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'payment_channel',
+        'manual_payment_method',
+        'manual_payment_details',
+        'payment_due_at',
         'order_code',
         'midtrans_order_id',
         'snap_token',
@@ -40,6 +46,10 @@ class Order extends Model
     ];
 
     protected $casts = [
+        'payment_channel' => PaymentChannel::class,
+        'manual_payment_method' => ManualPaymentMethod::class,
+        'manual_payment_details' => 'array',
+        'payment_due_at' => 'datetime',
         'delivery_method' => DeliveryMethod::class,
         'shipping_status' => ShippingStatus::class,
         'paid_at' => 'datetime',
@@ -59,7 +69,30 @@ class Order extends Model
 
     public function payment(): HasOne
     {
-        return $this->hasOne(Payment::class);
+        return $this->hasOne(Payment::class)->latestOfMany();
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function paymentProofs(): HasMany
+    {
+        return $this->hasMany(PaymentProof::class)->latest('id');
+    }
+
+    public function paymentStatusLogs(): HasMany
+    {
+        return $this->hasMany(PaymentStatusLog::class)->latest('id');
+    }
+
+    public function acceptsPaymentProof(): bool
+    {
+        return $this->payment_channel === PaymentChannel::MANUAL
+            && $this->payment_status === 'unpaid'
+            && ! in_array($this->status, ['cancelled', 'completed'], true)
+            && ! $this->shipping_status->isFinal();
     }
 
     public function canTransitionTo(ShippingStatus $newStatus): bool

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PaymentChannel;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Product;
@@ -71,6 +72,11 @@ class OrderService
                 'total' => round($total, 2),
                 'status' => 'pending',
                 'payment_status' => 'unpaid',
+                'payment_channel' => $data['payment_channel'],
+                'manual_payment_method' => $data['payment_channel'] === 'manual' ? $data['manual_payment_method'] : null,
+                'manual_payment_details' => $data['payment_channel'] === 'manual' ? config('payments.manual.'.$data['manual_payment_method']) : null,
+                'midtrans_order_id' => $data['payment_channel'] === 'midtrans' ? 'BK-'.Str::uuid() : null,
+                'payment_due_at' => now()->addMinutes(config('payments.midtrans.expiry_minutes')),
                 'delivery_method' => $data['delivery_method'],
                 'shipping_status' => 'pending',
                 'recipient_name' => $data['recipient_name'] ?? $user->name,
@@ -127,6 +133,22 @@ class OrderService
         return DB::transaction(function () use ($order, $status, $shippingStatus): Order {
             $lockedOrder = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
 
+            if (($status === 'cancelled' || $shippingStatus === 'cancelled') && $lockedOrder->payment_status === 'paid') {
+                throw ValidationException::withMessages(['status' => 'Pesanan yang sudah dibayar memerlukan refund sebelum dibatalkan.']);
+            }
+            if ($shippingStatus === 'cancelled' && $status !== 'cancelled') {
+                throw ValidationException::withMessages(['shipping_status' => 'Batalkan pesanan untuk membatalkan pengiriman.']);
+            }
+            if ($status === 'cancelled' && $lockedOrder->payment_channel === PaymentChannel::MIDTRANS && $lockedOrder->status !== 'cancelled') {
+                throw ValidationException::withMessages(['status' => 'Sinkronkan pembatalan atau kedaluwarsa melalui Midtrans.']);
+            }
+            if (($status === 'processing' || $status === 'completed' || in_array($shippingStatus, ['processing', 'delivering', 'ready_for_pickup', 'completed'], true)) && $lockedOrder->payment_status !== 'paid') {
+                throw ValidationException::withMessages(['status' => 'Pembayaran harus sah sebelum pesanan diproses.']);
+            }
+            if ($lockedOrder->status === 'completed' && $status !== 'completed') {
+                throw ValidationException::withMessages(['status' => 'Pesanan selesai tidak dapat dibuka kembali.']);
+            }
+
             if ($lockedOrder->status === 'cancelled' && $status !== 'cancelled') {
                 throw ValidationException::withMessages([
                     'status' => 'A cancelled order cannot be reopened.',
@@ -134,7 +156,7 @@ class OrderService
             }
 
             if ($status === 'cancelled' && $lockedOrder->status !== 'cancelled') {
-                foreach ($lockedOrder->items as $item) {
+                foreach ($lockedOrder->items()->orderBy('product_id')->get() as $item) {
                     if ($item->product_id !== null) {
                         Product::query()
                             ->whereKey($item->product_id)
@@ -149,10 +171,10 @@ class OrderService
             if ($status === 'completed') {
                 $attributes['shipping_status'] = 'completed';
                 $attributes['completed_at'] = now();
-            } elseif ($shippingStatus !== null) {
-                $attributes['shipping_status'] = $shippingStatus;
             } elseif ($status === 'cancelled') {
                 $attributes['shipping_status'] = 'cancelled';
+            } elseif ($shippingStatus !== null) {
+                $attributes['shipping_status'] = $shippingStatus;
             }
 
             $lockedOrder->update($attributes);

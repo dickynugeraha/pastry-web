@@ -50,6 +50,7 @@ $paymentStatus = ['unpaid' => 'Belum dibayar', 'paid' => 'Sudah dibayar', 'faile
             @endif
         </div>
         <aside class="grid gap-4">
+            @include('shop.orders.payment', ['order' => $order])
             <div class="bunkue-card p-6">
                 <h2 class="text-base font-semibold text-stone-900">Penerimaan</h2>
                 <p class="mt-4 text-sm font-medium text-stone-800">{{ $order->delivery_method->label() }}</p>
