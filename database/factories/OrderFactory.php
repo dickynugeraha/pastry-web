@@ -34,12 +34,12 @@ class OrderFactory extends Factory
 
     public function manual(string $method = 'bca'): static
     {
-        return $this->state(fn (): array => ['payment_channel' => 'manual', 'manual_payment_method' => $method, 'manual_payment_details' => config('payments.manual.'.$method), 'payment_due_at' => now()->addHour()]);
+        return $this->state(fn (): array => ['payment_channel' => 'manual', 'manual_payment_method' => $method, 'manual_payment_details' => config('payments.manual.'.$method), 'payment_due_at' => now()->addMinutes(config('payments.timeout_minutes'))]);
     }
 
     public function midtrans(): static
     {
-        return $this->state(fn (): array => ['payment_channel' => 'midtrans', 'midtrans_order_id' => 'BK-'.fake()->uuid(), 'payment_due_at' => now()->addHour()]);
+        return $this->state(fn (): array => ['payment_channel' => 'midtrans', 'midtrans_order_id' => 'BK-'.fake()->uuid(), 'payment_due_at' => now()->addMinutes(config('payments.timeout_minutes'))]);
     }
 
     public function paid(): static

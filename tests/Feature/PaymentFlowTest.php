@@ -47,6 +47,23 @@ class PaymentFlowTest extends TestCase
         $this->get(route('orders.show', $order))->assertOk()->assertSeeText('12345')->assertDontSeeText('changed');
     }
 
+    public function test_checkout_sets_payment_deadline_three_hours_after_order_creation(): void
+    {
+        $this->travelTo('2026-11-03 10:00:00');
+        [$user] = $this->cart();
+
+        $this->actingAs($user)->postJson(route('orders.store'), [
+            'delivery_method' => 'pickup',
+            'payment_channel' => 'manual',
+            'manual_payment_method' => 'bca',
+        ])->assertCreated();
+
+        $this->assertSame(
+            '2026-11-03 13:00:00',
+            Order::query()->sole()->payment_due_at->format('Y-m-d H:i:s'),
+        );
+    }
+
     #[TestWith([[], 'payment_channel'])]
     #[TestWith([['payment_channel' => 'manual'], 'manual_payment_method'])]
     #[TestWith([['payment_channel' => 'manual', 'manual_payment_method' => 'invalid'], 'manual_payment_method'])]
@@ -421,16 +438,30 @@ class PaymentFlowTest extends TestCase
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'pending', 'payment_status' => 'unpaid']);
     }
 
-    public function test_scheduler_reconciles_midtrans_and_leaves_manual_orders_alone(): void
+    public function test_scheduler_reconciles_midtrans_and_cancels_expired_manual_orders_once(): void
     {
         $order = Order::factory()->midtrans()->create();
-        $manual = Order::factory()->manual()->create(['payment_due_at' => now()->subDay()]);
+        $manual = Order::factory()->manual()->create(['payment_due_at' => now()->subMinute()]);
+        $futureManual = Order::factory()->manual()->create(['payment_due_at' => now()->addMinute()]);
+        $paidManual = Order::factory()->manual()->paid()->create(['payment_due_at' => now()->subDay()]);
+        $product = Product::factory()->create(['stock' => 3]);
+        OrderItem::factory()->for($manual)->for($product)->create(['qty' => 2]);
         $this->gatewayStatus($this->notification($order), $order->midtrans_order_id);
 
         $this->artisan('payments:reconcile')->assertSuccessful();
+        $this->artisan('payments:reconcile')->assertSuccessful();
 
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'payment_status' => 'paid']);
-        $this->assertDatabaseHas('orders', ['id' => $manual->id, 'payment_status' => 'unpaid', 'status' => 'pending']);
+        $this->assertDatabaseHas('orders', ['id' => $manual->id, 'payment_status' => 'failed', 'status' => 'cancelled', 'shipping_status' => 'cancelled']);
+        $this->assertDatabaseHas('orders', ['id' => $futureManual->id, 'payment_status' => 'unpaid', 'status' => 'pending']);
+        $this->assertDatabaseHas('orders', ['id' => $paidManual->id, 'payment_status' => 'paid', 'status' => 'pending']);
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'stock' => 5]);
+        $this->assertDatabaseHas('payment_status_logs', [
+            'order_id' => $manual->id,
+            'from_status' => 'unpaid',
+            'to_status' => 'failed',
+            'source' => 'system',
+        ]);
     }
 
     public function test_paid_order_can_proceed_to_processing_without_payment_changes(): void

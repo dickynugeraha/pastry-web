@@ -76,7 +76,7 @@ class OrderService
                 'manual_payment_method' => $data['payment_channel'] === 'manual' ? $data['manual_payment_method'] : null,
                 'manual_payment_details' => $data['payment_channel'] === 'manual' ? config('payments.manual.'.$data['manual_payment_method']) : null,
                 'midtrans_order_id' => $data['payment_channel'] === 'midtrans' ? 'BK-'.Str::uuid() : null,
-                'payment_due_at' => now()->addMinutes(config('payments.midtrans.expiry_minutes')),
+                'payment_due_at' => now()->addMinutes(config('payments.timeout_minutes')),
                 'delivery_method' => $data['delivery_method'],
                 'shipping_status' => 'pending',
                 'recipient_name' => $data['recipient_name'] ?? $user->name,

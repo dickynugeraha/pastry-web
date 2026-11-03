@@ -2,15 +2,17 @@
 
 $production = (bool) env('MIDTRANS_IS_PRODUCTION', false);
 $prefix = $production ? 'MIDTRANS_PRODUCTION_' : 'MIDTRANS_SANDBOX_';
+$paymentTimeoutMinutes = max(5, min(10080, (int) env('PAYMENT_TIMEOUT_MINUTES', 180)));
 
 return [
+    'timeout_minutes' => $paymentTimeoutMinutes,
     'midtrans' => [
         'enabled' => (bool) env('MIDTRANS_ENABLED', false),
         'is_production' => $production,
         'merchant_id' => env($prefix.'MERCHANT_ID') ?: env('MIDTRANS_MERCHANT_ID', ''),
         'server_key' => env($prefix.'SERVER_KEY') ?: env('MIDTRANS_SERVER_KEY', ''),
         'client_key' => env($prefix.'CLIENT_KEY') ?: env('MIDTRANS_CLIENT_KEY', ''),
-        'expiry_minutes' => max(5, min(10080, (int) env('MIDTRANS_PAYMENT_EXPIRY_MINUTES', 60))),
+        'expiry_minutes' => $paymentTimeoutMinutes,
         'snap_script_url' => $production ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js',
     ],
     'manual' => [

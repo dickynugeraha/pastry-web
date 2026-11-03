@@ -168,30 +168,51 @@ class PaymentService
                 $terminal = $latest === null || in_array($latest['transaction_status'], ['expire', 'cancel'], true);
             }
             if ($terminal) {
-                $this->cancelExpiredOrder($order);
+                $this->cancelExpiredOrder(
+                    $order,
+                    PaymentChannel::MIDTRANS,
+                    'Sesi Midtrans terverifikasi dibatalkan setelah batas pembayaran.',
+                );
             }
         }
 
         return $order->refresh();
     }
 
-    private function cancelExpiredOrder(Order $order): void
+    public function expireManualOrder(Order $order): void
     {
-        DB::transaction(function () use ($order): void {
+        $this->cancelExpiredOrder(
+            $order,
+            PaymentChannel::MANUAL,
+            'Pesanan otomatis dibatalkan karena belum dibayar sampai batas waktu.',
+        );
+    }
+
+    private function cancelExpiredOrder(Order $order, PaymentChannel $paymentChannel, string $note): void
+    {
+        DB::transaction(function () use ($order, $paymentChannel, $note): void {
             $locked = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
-            if ($locked->status !== 'pending' || in_array($locked->payment_status, ['paid', 'refunded'], true)) {
+            if ($locked->payment_channel !== $paymentChannel
+                || $locked->payment_due_at === null
+                || $locked->payment_due_at->isFuture()
+                || $locked->status !== 'pending'
+                || in_array($locked->payment_status, ['paid', 'refunded'], true)) {
                 return;
             }
-            foreach ($locked->items()->orderBy('product_id')->get() as $item) {
+
+            foreach ($locked->items()->orderBy('product_id')->lockForUpdate()->get() as $item) {
                 if ($item->product_id !== null) {
-                    Product::query()->whereKey($item->product_id)->increment('stock', $item->qty);
+                    Product::query()->whereKey($item->product_id)->lockForUpdate()->first()?->increment('stock', $item->qty);
                 }
             }
+
             if ($locked->payment_status !== 'failed') {
-                $this->audit($locked, 'failed', 'system', note: 'Sesi Midtrans terverifikasi dibatalkan setelah batas pembayaran.');
+                $this->audit($locked, 'failed', 'system', note: $note);
             }
+
+            $locked->paymentProofs()->where('review_status', 'pending')->update(['review_status' => 'superseded']);
             $locked->update(['status' => 'cancelled', 'shipping_status' => 'cancelled', 'payment_status' => 'failed']);
-        });
+        }, attempts: 3);
     }
 
     /** @param array<string, mixed> $data */
